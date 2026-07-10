@@ -13,7 +13,7 @@ Owner asked to place the **research results** under **com-junkawasaki** orgs.
 
 ## Decision
 
-Create private GitHub repo `com-junkawasaki/sqrt-space-kv` as the results
+Create public GitHub repo `com-junkawasaki/sqrt-space-kv` as the results
 home:
 
 - `paper/` — LaTeX + ASCII abstract + PDF
@@ -23,7 +23,7 @@ home:
 
 Code stays in `cloud-murakumo`. arXiv submit workflow stays in
 `kotoba-lang/arxiv`. This repo is the **SSoT for results artifacts** under
-the personal research org (`com-junkawasaki`, private).
+the personal research org (`com-junkawasaki`; this results repo is public).
 
 ## Consequences
 

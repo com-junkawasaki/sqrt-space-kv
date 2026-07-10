@@ -69,7 +69,7 @@ cd paper && make   # pdflatex + bibtex
 ## License / citation
 
 Paper text and benchmark JSON are research artifacts for the
-`com-junkawasaki` private research surface. Upstream code remains in
+`com-junkawasaki` public research surface. Upstream code remains in
 `gftdcojp/cloud-murakumo`. Cite Williams STOC 2025 for the complexity
 result; this package is an empirical systems transfer, not a TM simulation
 of Transformers.
