@@ -16,6 +16,8 @@ implementation / arXiv submission workflow.
 | **Public id** | *pending announce* (update when `arXiv:YYMM.NNNNN` appears) |
 | **Code** | [`gftdcojp/cloud-murakumo`](https://github.com/gftdcojp/cloud-murakumo) (`:serve :kv-policy`) |
 | **Submit actor** | [`kotoba-lang/arxiv`](https://github.com/kotoba-lang/arxiv) |
+| **HF paper dataset** | [`com-junkawasaki/sqrt-space-kv-paper`](https://huggingface.co/datasets/com-junkawasaki/sqrt-space-kv-paper) |
+| **Qwen3.6 MoE** | 35B-A3B Modal: **88.5%** KV save @ S=16k (hybrid; see benchmarks) |
 
 ## Layout
 

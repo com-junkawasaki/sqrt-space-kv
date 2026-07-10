@@ -80,3 +80,18 @@ Save percentages match Mac / 7B to three digits — ratio is |K|/S, not width.
 ## Raw data
 
 See `benchmarks/` for JSON + markdown notes. Paper: `paper/sqrt_space_kv.tex`.
+
+## Addendum — Qwen3.6-35B-A3B (Modal A100-80GB, 2026-07-10)
+
+User request: "Qwen 3.6 26B A3B". Public open model is **35B-A3B** (total/activated).
+
+| S | full | √S res. | save |
+|---:|---:|---:|---:|
+| 2048 | 75.4 MB | 36.3 MB | 51.8% |
+| 4096 | 117.3 MB | 37.7 MB | 67.9% |
+| 8192 | 201.2 MB | 37.7 MB | 81.3% |
+| 16384 | 369.0 MB | 42.4 MB | **88.5%** |
+
+- Hybrid linear+full attention: O(1) state floors absolute residency ~36–42 MB.
+- Block-stream vs full online-softmax: max|Δ|≈0.016 (bf16 noise) → fidelity held.
+- See `benchmarks/sqrt-kv-modal-Qwen3.6-35B-A3B.md`.
