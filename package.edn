@@ -10,6 +10,9 @@
  :research/cross-lists ["cs.LG" "cs.CC"]
  :research/arxiv-draft-id "7807366"
  :research/arxiv-account "junkawasaki-n24y"
+ :research/arxiv-state :submitted
+ :research/arxiv-id nil ; fill when announced
+ :research/submitted-at "2026-07-10"
  :research/related
  {:code "github.com/gftdcojp/cloud-murakumo"
   :arxiv-actor "github.com/kotoba-lang/arxiv"

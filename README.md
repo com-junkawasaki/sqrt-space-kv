@@ -12,7 +12,8 @@ implementation / arXiv submission workflow.
 | **Models** | 135M (Mac MLX) → 14B (Modal A100 bf16) |
 | **Exactness** | Host-paged online-softmax block attention is numerically exact (max\|Δ\|≈7e-5) |
 | **Negative** | Whole-prefix recompute each token *increases* peak device memory |
-| **arXiv draft** | `7807366` (account `junkawasaki-n24y`, primary **cs.CL**) |
+| **arXiv** | **submitted** 2026-07-10 · draft `7807366` · primary **cs.CL** · account `junkawasaki-n24y` |
+| **Public id** | *pending announce* (update when `arXiv:YYMM.NNNNN` appears) |
 | **Code** | [`gftdcojp/cloud-murakumo`](https://github.com/gftdcojp/cloud-murakumo) (`:serve :kv-policy`) |
 | **Submit actor** | [`kotoba-lang/arxiv`](https://github.com/kotoba-lang/arxiv) |
 
