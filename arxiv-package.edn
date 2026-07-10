@@ -1,0 +1,22 @@
+{:submission/id :sqrt-space-kv
+ :submission/title
+ "Simulating Autoregressive Memory with Square-Root Space: From Williams' Time-Space Theorem to Practical KV-Cache Residency"
+ :submission/authors
+ [{:name "Jun Kawasaki"
+   :affiliation "com-junkawasaki / etzhayyim / gftdcojp"}]
+ :submission/source-dir "submissions/sqrt-space-kv/source"
+ :submission/source-archive
+ "submissions/sqrt-space-kv/build/sqrt_space_kv-arxiv-source.tar.gz"
+ :submission/pdf "submissions/sqrt-space-kv/sqrt_space_kv.pdf"
+ ;; primary cs.CL: N24 account is endorsed for CL only (probe 2026-07-09).
+ ;; cs.LG/cs.DB/etc. still require fresh endorsement despite prior cs.DB papers.
+ :submission/primary-category "cs.CL"
+ :submission/cross-lists ["cs.LG" "cs.CC"]
+ :submission/license :cc-by-4.0
+ :submission/comments
+ "Language-model memory / KV residency systems note grounded in Williams STOC 2025. Primary cs.CL (autoregressive LM memory); intended cross-list cs.LG, cs.CC. Code: https://github.com/gftdcojp/cloud-murakumo. Not a TM simulation of Transformers."
+ :submission/abstract-file "submissions/sqrt-space-kv/abstract.txt"
+ ;; browser runner also resolves abstract.txt relative to package dir
+ :submission/final-submit-requires :human-approval
+ :submission/actor :actor/arxiv
+ :submission/related-repos ["gftdcojp/cloud-murakumo" "kotoba-lang/arxiv"]}

@@ -1,0 +1,259 @@
+{
+  "meta": {
+    "backend": "modal",
+    "app": "cloud-murakumo-sqrt-kv-bench",
+    "model_id": "Qwen/Qwen2.5-14B-Instruct",
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "gpu_mem_gb": 85.094825984,
+    "dtype": "bfloat16",
+    "load_4bit": false,
+    "load_s": 169.29939346199998,
+    "arch": {
+      "model_type": "qwen2",
+      "num_hidden_layers": 48,
+      "num_attention_heads": 40,
+      "num_key_value_heads": 8,
+      "hidden_size": 5120,
+      "head_dim": 128
+    },
+    "device": "cuda",
+    "theory": "Williams STOC 2025 TIME[t]\u2286SPACE[\u221a(t log t)] \u2192 b=\u221a(S ln S) KV residency"
+  },
+  "runs": [
+    {
+      "exp": "kv-residency",
+      "s": 1024,
+      "b": 85,
+      "h": 13,
+      "n_keep": 97,
+      "full_kv_mb": 201.326592,
+      "keep_kv_mb": 19.070976,
+      "ratio": 0.0947265625,
+      "save_pct": 90.52734375,
+      "bpt": 196608.0,
+      "prefill_s": 0.9431183179999891,
+      "cuda_peak_alloc_mb": 30225.975808,
+      "cuda_peak_reserved_mb": 30398.21824,
+      "pkv_shapes_sample": [
+        [
+          [
+            1,
+            8,
+            1024,
+            128
+          ],
+          [
+            1,
+            8,
+            1024,
+            128
+          ]
+        ],
+        [
+          [
+            1,
+            8,
+            1024,
+            128
+          ],
+          [
+            1,
+            8,
+            1024,
+            128
+          ]
+        ]
+      ]
+    },
+    {
+      "exp": "kv-residency",
+      "s": 2048,
+      "b": 125,
+      "h": 17,
+      "n_keep": 141,
+      "full_kv_mb": 402.653184,
+      "keep_kv_mb": 27.721728,
+      "ratio": 0.06884765625,
+      "save_pct": 93.115234375,
+      "bpt": 196608.0,
+      "prefill_s": 0.340663295000013,
+      "cuda_peak_alloc_mb": 30748.174848,
+      "cuda_peak_reserved_mb": 31125.929984,
+      "pkv_shapes_sample": [
+        [
+          [
+            1,
+            8,
+            2048,
+            128
+          ],
+          [
+            1,
+            8,
+            2048,
+            128
+          ]
+        ],
+        [
+          [
+            1,
+            8,
+            2048,
+            128
+          ],
+          [
+            1,
+            8,
+            2048,
+            128
+          ]
+        ]
+      ]
+    },
+    {
+      "exp": "kv-residency",
+      "s": 4096,
+      "b": 185,
+      "h": 23,
+      "n_keep": 207,
+      "full_kv_mb": 805.306368,
+      "keep_kv_mb": 40.697856,
+      "ratio": 0.050537109375,
+      "save_pct": 94.9462890625,
+      "bpt": 196608.0,
+      "prefill_s": 0.6227465510000059,
+      "cuda_peak_alloc_mb": 31794.67008,
+      "cuda_peak_reserved_mb": 32457.621504,
+      "pkv_shapes_sample": [
+        [
+          [
+            1,
+            8,
+            4096,
+            128
+          ],
+          [
+            1,
+            8,
+            4096,
+            128
+          ]
+        ],
+        [
+          [
+            1,
+            8,
+            4096,
+            128
+          ],
+          [
+            1,
+            8,
+            4096,
+            128
+          ]
+        ]
+      ]
+    },
+    {
+      "exp": "kv-residency",
+      "s": 8192,
+      "b": 272,
+      "h": 31,
+      "n_keep": 302,
+      "full_kv_mb": 1610.612736,
+      "keep_kv_mb": 59.375616,
+      "ratio": 0.036865234375,
+      "save_pct": 96.3134765625,
+      "bpt": 196608.0,
+      "prefill_s": 1.3057850920000078,
+      "cuda_peak_alloc_mb": 33887.660544,
+      "cuda_peak_reserved_mb": 35215.376384,
+      "pkv_shapes_sample": [
+        [
+          [
+            1,
+            8,
+            8192,
+            128
+          ],
+          [
+            1,
+            8,
+            8192,
+            128
+          ]
+        ],
+        [
+          [
+            1,
+            8,
+            8192,
+            128
+          ],
+          [
+            1,
+            8,
+            8192,
+            128
+          ]
+        ]
+      ]
+    },
+    {
+      "exp": "kv-residency",
+      "s": 16384,
+      "b": 399,
+      "h": 42,
+      "n_keep": 440,
+      "full_kv_mb": 3221.225472,
+      "keep_kv_mb": 86.50752,
+      "ratio": 0.02685546875,
+      "save_pct": 97.314453125,
+      "bpt": 196608.0,
+      "prefill_s": 2.903849827000016,
+      "cuda_peak_alloc_mb": 38073.641472,
+      "cuda_peak_reserved_mb": 40831.54944,
+      "pkv_shapes_sample": [
+        [
+          [
+            1,
+            8,
+            16384,
+            128
+          ],
+          [
+            1,
+            8,
+            16384,
+            128
+          ]
+        ],
+        [
+          [
+            1,
+            8,
+            16384,
+            128
+          ],
+          [
+            1,
+            8,
+            16384,
+            128
+          ]
+        ]
+      ]
+    }
+  ],
+  "verdict": {
+    "sqrt_save_pct": [
+      90.52734375,
+      93.115234375,
+      94.9462890625,
+      96.3134765625,
+      97.314453125
+    ],
+    "significant_kv_save": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+ :submission/id :sqrt-space-kv
+ :submission/state :pending-human-final-submit
+ :submission/arxiv-draft-id "7807366"
+ :submission/url "https://arxiv.org/submit/7807366/addfiles"
+ :submission/arxiv-account "junkawasaki-n24y"
+ :submission/primary-category "cs.CL"
+ :submission/updated-at "2026-07-10"
+ :submission/cross-lists ["cs.LG" "cs.CC"]
+ :submission/notes
+ [  "browser runner steps: ['login', 'user-home', 'start', 'accept-terms', 'fill-start-form', 'start-ok', 'upload-source', 'process-metadata-walk', 'final-submit-wrong-stage']"
+  "error: final submit aborted: still at https://arxiv.org/submit/7807366/addfiles"
+  "source: /Users/junkawasaki/github/com-junkawasaki/orgs/kotoba-lang/arxiv/submissions/sqrt-space-kv/build/sqrt_space_kv-arxiv-source.tar.gz"
+  "final-submit requires APPROVE_FINAL=1 + human policy gate"]
+}

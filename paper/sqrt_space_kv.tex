@@ -1,0 +1,217 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{microtype}
+\usepackage{authblk}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+\setlength{\emergencystretch}{2em}
+
+\title{\textbf{Simulating Autoregressive Memory with Square-Root Space:\\
+From Williams' Time--Space Theorem to Practical KV-Cache Residency}}
+
+\author[1]{Jun Kawasaki}
+\affil[1]{com-junkawasaki / etzhayyim / gftdcojp}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Williams (STOC~2025) proved that every multitape Turing machine running in time
+$t$ can be simulated in space $O(\sqrt{t\log t})$, via Tree Evaluation and the
+Cook--Mertz algorithm. We transfer the same \emph{block-size optimization} to the
+dominant sequential memory structure in LLM serving: the key--value (KV) cache of
+length $S$. We do \emph{not} claim that Transformers are multitape TMs. Setting
+checkpoint stride $b\approx\sqrt{S\log S}$ and retaining only boundary
+checkpoints plus one active block (\emph{$\sqrt{S}$ residency}) reduces measured
+KV storage by $90$--$97\%$ for $S\in[1\mathrm{k},16\mathrm{k}]$ across real
+models from $135\mathrm{M}$ (Apple Silicon) to $14\mathrm{B}$ (Modal NVIDIA
+A100), while host-paged online-softmax attention remains numerically exact.
+Naive whole-prefix recompute each token \emph{increases} peak device memory.
+Code and JSON benchmarks:
+\texttt{github.com/gftdcojp/cloud-murakumo}.
+\end{abstract}
+
+\section{Introduction}
+
+Autoregressive Transformers store key/value tensors for every past token. For
+sequence length $S$, layers $L$, KV heads $H_{\mathrm{kv}}$, and head dimension
+$d$, the cache occupies
+\begin{equation}
+  \mathrm{KVBytes}(S)
+  \;=\;
+  2\, L\, H_{\mathrm{kv}}\, d\, S\, \mathrm{sizeof}(\mathrm{dtype}),
+\end{equation}
+i.e.\ $\Theta(S)$ for fixed model shape. Long-context and multi-tenant serving
+make this term the primary memory wall after weights.
+
+Williams~\cite{williams2025} improved the generic simulation of time by space
+from Hopcroft--Paul--Valiant's $O(t/\log t)$~\cite{hpv1977} to
+$O(\sqrt{t\log t})$. The proof reduces a length-$t$ computation to Tree
+Evaluation of height $h=\Theta(t/b)$ with node values of size $O(b)$, then
+applies Cook--Mertz~\cite{cookmertz2024}. Optimizing $b\sim\sqrt{t\log t}$ yields
+square-root space.
+
+\paragraph{Question.}
+Does the same block-size optimization yield a measurable reduction in LLM decode
+memory when applied to KV caches?
+
+\paragraph{Contributions.}
+(1)~An honest transfer map from Williams' parameters $(t,b,h)$ to LLM parameters
+$(S,b,h)$.
+(2)~A closed co-scientist tournament over memory policies for product wiring in
+\texttt{cloud-murakumo}.
+(3)~Empirical validation on real models (Mac Metal and Modal CUDA).
+(4)~Negative results: whole-prefix recompute is not a peak-memory win.
+
+\section{Background and transfer}
+
+\paragraph{Williams (informal).}
+For all $t(n)\ge n$,
+$\mathsf{TIME}[t]\subseteq\mathsf{SPACE}[\sqrt{t\log t}]$
+on multitape Turing machines~\cite{williams2025}.
+
+\paragraph{What we transfer---and do not.}
+We transfer \emph{parameter balancing + block recompute/paging}, not a
+complexity-theoretic embedding of attention into multitape TMs.
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Theory object & Serving analogue \\
+\midrule
+Time bound $t$ & Sequence length $S$ \\
+Block length $b$ & Checkpoint stride / active block \\
+Tree height $h\sim t/b$ & Number of checkpoints \\
+Multitape TM & \textbf{Not claimed} for Transformers \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Method: $\sqrt{S}$ KV residency}
+
+Mirror Williams' warm-up optimum (log base absorbed in constants):
+\begin{equation}
+  b(S)=\Big\lceil\sqrt{S\ln S}\Big\rceil,\qquad
+  h(S)=\Big\lceil S/b(S)\Big\rceil.
+\end{equation}
+After a real model prefill producing full K/V of length $S$, retain only
+\begin{equation}
+  \mathcal{K}
+  \;=\;
+  \{0,b,2b,\ldots\}
+  \;\cup\;
+  \{S-b,\ldots,S-1\}.
+\end{equation}
+Report $\mathrm{nbytes}(\mathcal{K})/\mathrm{nbytes}([0..S))$.
+Decode may page non-resident blocks from host and combine them with
+\emph{online softmax} (exact attention without materializing $S\times S$ scores
+for a single query).
+
+\section{Experimental setup}
+
+\paragraph{Apple Silicon.}
+SmolLM-135M-Instruct-4bit and Qwen2.5-0.5B-Instruct-4bit via MLX;
+gemma4-E4B (8B Q4) via Ollama (process-level SIZE).
+
+\paragraph{Modal NVIDIA.}
+Qwen2.5-7B-Instruct (A100-40GB, bf16) and Qwen2.5-14B-Instruct (A100-80GB, bf16)
+via Hugging Face Transformers \texttt{use\_cache=True}.
+Runner: \texttt{scripts/modal\_sqrt\_kv\_bench.py}.
+
+\paragraph{Metrics.}
+Full vs resident KV megabytes; bytes per token (bpt);
+CUDA/Metal peak allocation; $\max|\Delta|$ for block-stream attention.
+
+\section{Results}
+
+\subsection{Mac --- SmolLM-135M}
+$L{=}30$, $H_{\mathrm{kv}}{=}3$, $d{=}64$ ($\mathrm{bpt}{=}23040$).
+At $S{=}8192$: full KV $188.7\,\mathrm{MB}$, $\sqrt{S}$ resident $7.0\,\mathrm{MB}$
+(\textbf{96.3\%} save). Host-paged block attention at $S{=}2048$:
+$\max|\Delta|{=}7\cdot10^{-5}$.
+
+\subsection{Mac --- Qwen2.5-0.5B}
+$L{=}24$, $H_{\mathrm{kv}}{=}2$, $d{=}64$ ($\mathrm{bpt}{=}12288$).
+At $S{=}16384$: full $201.3\,\mathrm{MB}$ $\to$ $5.4\,\mathrm{MB}$
+(\textbf{97.3\%}).
+
+\subsection{Modal --- Qwen2.5-7B (A100-40GB, bf16)}
+$L{=}28$, $H_{\mathrm{kv}}{=}4$, $d{=}128$ ($\mathrm{bpt}{=}57344$).
+
+\begin{center}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+$S$ & full KV & $\sqrt{S}$ res.\ & save & peak alloc \\
+\midrule
+1024  & 58.7\,MB  & 5.6\,MB  & 90.5\% & 15.7\,GB \\
+4096  & 234.9\,MB & 11.9\,MB & 94.9\% & 17.4\,GB \\
+8192  & 469.8\,MB & 17.3\,MB & 96.3\% & 18.9\,GB \\
+16384 & 939.5\,MB & 25.2\,MB & \textbf{97.3\%} & 21.9\,GB \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Modal --- Qwen2.5-14B (A100-80GB, bf16)}
+$L{=}48$, $H_{\mathrm{kv}}{=}8$, $d{=}128$ ($\mathrm{bpt}{=}196608$).
+At $S{=}16384$: full KV \textbf{3.22\,GB} $\to$ \textbf{86.5\,MB}
+(\textbf{97.3\%}; $\sim$3.1\,GB freed per sequence).
+Save percentages match 7B/Mac to three digits---the ratio is
+$|\mathcal{K}|/S$, independent of width.
+
+\subsection{Negative result}
+Whole-prefix re-forward each decode step increases peak device memory
+(Mac and Modal; ratios $1.04$--$1.7$). Williams-style recomputation must be
+\emph{blocked}, not whole-trace.
+
+\subsection{Process-level mask}
+Ollama gemma4-E4B SIZE stays $\sim$3.3\,GB from 4k--32k context (weights dominate).
+KV savings exist but are masked until long context or large multi-batch KV.
+
+\section{Discussion}
+
+$\sqrt{S}$ residency matters operationally for long context
+($S\gtrsim 32$--$128\mathrm{k}$), high bpt (MHA, many layers, fp16 KV), and
+multi-tenant packing. PagedAttention manages fragmentation of a still-$\Theta(S)$
+cache; FlashAttention tiles for IO without reducing asymptotic stored KV.
+$\sqrt{S}$ residency reduces \emph{how many token slots are stored on-device}, at
+the cost of paging bandwidth---the classical Williams tradeoff.
+
+A proof that Transformer decode lies in $\mathsf{SPACE}[\tilde O(\sqrt{S})]$ in
+the multitape sense would require full TM accounting of arithmetic and
+random-access issues. We explicitly do not claim that theorem.
+
+Product surface: \texttt{cloud-murakumo} \texttt{:serve :kv-policy}
+(\texttt{:sqrt-checkpoint} / \texttt{:sqrt-plus-page}).
+
+\section{Conclusion}
+
+Williams' square-root space simulation supplies a principled block size for LLM
+KV residency. On real models from $135\mathrm{M}$ to $14\mathrm{B}$, retaining
+only $\tilde O(\sqrt{S})$ token slots cuts KV storage by roughly an order of
+magnitude, while naive full recompute fails as a peak-memory strategy.
+
+\section*{Reproducibility}
+\begin{verbatim}
+# Mac
+python scripts/bench_sqrt_kv_mac.py \
+  --model mlx-community/SmolLM-135M-Instruct-4bit
+
+# Modal
+modal run scripts/modal_sqrt_kv_bench.py \
+  --model-id Qwen/Qwen2.5-7B-Instruct --gpu A100
+\end{verbatim}
+Artifacts: \texttt{docs/benchmarks/sqrt-kv-*.json} in
+\texttt{gftdcojp/cloud-murakumo}.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

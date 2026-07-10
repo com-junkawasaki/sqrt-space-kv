@@ -1,0 +1,28 @@
+{:research/id :sqrt-space-kv
+ :research/title
+ "Simulating Autoregressive Memory with Square-Root Space: From Williams' Time-Space Theorem to Practical KV-Cache Residency"
+ :research/org "com-junkawasaki"
+ :research/repo "github.com/com-junkawasaki/sqrt-space-kv"
+ :research/authors
+ [{:name "Jun Kawasaki"
+   :affiliation "com-junkawasaki / etzhayyim / gftdcojp"}]
+ :research/primary-category "cs.CL"
+ :research/cross-lists ["cs.LG" "cs.CC"]
+ :research/arxiv-draft-id "7807366"
+ :research/arxiv-account "junkawasaki-n24y"
+ :research/related
+ {:code "github.com/gftdcojp/cloud-murakumo"
+  :arxiv-actor "github.com/kotoba-lang/arxiv"
+  :arxiv-package "orgs/kotoba-lang/arxiv/submissions/sqrt-space-kv"}
+ :research/claims
+ [{:id :kv-save
+   :statement "√S residency reduces measured KV storage 90-97% for S in [1k,16k]"
+   :evidence ["benchmarks/sqrt-kv-mac-m4-validation.md"
+              "benchmarks/sqrt-kv-modal-summary.md"]}
+  {:id :attention-exact
+   :statement "Host-paged online-softmax block attention is numerically exact"
+   :evidence ["benchmarks/sqrt-kv-mac-m4-smollm135.md"]}
+  {:id :recompute-negative
+   :statement "Whole-prefix recompute each token increases peak device memory"
+   :evidence ["benchmarks/sqrt-kv-mac-m4-validation.md"]}]
+ :research/updated-at "2026-07-10"}

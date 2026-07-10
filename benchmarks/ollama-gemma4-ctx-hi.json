@@ -1,0 +1,36 @@
+{
+  "rows": [
+    {
+      "num_ctx": 4096,
+      "size_gb": 3.3,
+      "ollama_ctx": 4096,
+      "prompt_eval_count": 3293,
+      "elapsed_s": 71.57926037488505,
+      "error": null
+    },
+    {
+      "num_ctx": 16384,
+      "size_gb": 3.3,
+      "ollama_ctx": 16384,
+      "prompt_eval_count": 13124,
+      "elapsed_s": 124.55128037487157,
+      "error": null
+    },
+    {
+      "num_ctx": 32768,
+      "size_gb": 3.3,
+      "ollama_ctx": 32768,
+      "prompt_eval_count": 26231,
+      "elapsed_s": 227.4220684580505,
+      "error": null
+    },
+    {
+      "num_ctx": 65536,
+      "size_gb": 3.4,
+      "ollama_ctx": 65536,
+      "prompt_eval_count": 52445,
+      "elapsed_s": 500.11785949999467,
+      "error": null
+    }
+  ]
+}

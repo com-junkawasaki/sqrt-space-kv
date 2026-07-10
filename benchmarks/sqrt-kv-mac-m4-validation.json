@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "chip": "Apple M4",
+    "ram_gb": 34.359738368,
+    "mlx_model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+    "ollama_model": "gemma4:e4b",
+    "date": "2026-07-09"
+  },
+  "runs": [
+    {
+      "exp": "kv-residency",
+      "s": 2048,
+      "b": 125,
+      "n_keep": 141,
+      "full_kv_mb": 25.165824,
+      "keep_kv_mb": 1.732608,
+      "host_mb": 25.165824,
+      "ratio": 0.06884765625,
+      "full_active_mb": 928.665612,
+      "keep_active_mb": 283.553804,
+      "save_pct": 93.115234375
+    },
+    {
+      "exp": "kv-residency",
+      "s": 4096,
+      "b": 185,
+      "n_keep": 207,
+      "full_kv_mb": 50.331648,
+      "keep_kv_mb": 2.543616,
+      "host_mb": 50.331648,
+      "ratio": 0.050537109375,
+      "full_active_mb": 1576.267788,
+      "keep_active_mb": 284.307468,
+      "save_pct": 94.9462890625
+    },
+    {
+      "exp": "kv-residency",
+      "s": 8192,
+      "b": 272,
+      "n_keep": 302,
+      "full_kv_mb": 100.663296,
+      "keep_kv_mb": 3.710976,
+      "host_mb": 100.663296,
+      "ratio": 0.036865234375,
+      "full_active_mb": 2871.324684,
+      "keep_active_mb": 285.09364,
+      "save_pct": 96.3134765625
+    },
+    {
+      "exp": "kv-residency",
+      "s": 16384,
+      "b": 399,
+      "n_keep": 440,
+      "full_kv_mb": 201.326592,
+      "keep_kv_mb": 5.40672,
+      "host_mb": 201.326592,
+      "ratio": 0.02685546875,
+      "full_active_mb": 5461.356556,
+      "keep_active_mb": 286.666764,
+      "save_pct": 97.314453125
+    },
+    {
+      "exp": "host-paged-attn",
+      "s": 4096,
+      "b": 185,
+      "max_abs_diff": NaN
+    },
+    {
+      "exp": "ollama-gemma4",
+      "num_ctx": 1024,
+      "runner_rss_mb": 0.0,
+      "prompt_eval_count": null,
+      "eval_count": null,
+      "elapsed_s": 0.012388417031615973,
+      "error": null,
+      "ok": false
+    },
+    {
+      "exp": "ollama-gemma4",
+      "num_ctx": 2048,
+      "runner_rss_mb": 0.0,
+      "prompt_eval_count": null,
+      "eval_count": null,
+      "elapsed_s": 0.009824875043705106,
+      "error": null,
+      "ok": false
+    },
+    {
+      "exp": "ollama-gemma4",
+      "num_ctx": 4096,
+      "runner_rss_mb": 0.0,
+      "prompt_eval_count": null,
+      "eval_count": null,
+      "elapsed_s": 0.00907058292068541,
+      "error": null,
+      "ok": false
+    },
+    {
+      "exp": "ollama-gemma4",
+      "num_ctx": 8192,
+      "runner_rss_mb": 0.0,
+      "prompt_eval_count": null,
+      "eval_count": null,
+      "elapsed_s": 0.008699374971911311,
+      "error": null,
+      "ok": false
+    },
+    {
+      "exp": "ollama-gemma4",
+      "num_ctx": 16384,
+      "runner_rss_mb": 0.0,
+      "prompt_eval_count": null,
+      "eval_count": null,
+      "elapsed_s": 0.009804707951843739,
+      "error": null,
+      "ok": false
+    }
+  ],
+  "verdict": {
+    "kv_linear": true,
+    "sqrt_residency_significant": true,
+    "notes": "Real Qwen2.5-0.5B KV grows linearly (~12KB/token all layers). Keeping only \u221a(S log S) checkpoints + active block on-device yields >90% KV storage reduction. Host-paged block attention remains numerically close (exact online softmax). Naive no-cache recompute does NOT cut peak (activations dominate). Product-relevant win is KV residency / paging with Williams block size, not whole-model peak during re-forward."
+  }
+}

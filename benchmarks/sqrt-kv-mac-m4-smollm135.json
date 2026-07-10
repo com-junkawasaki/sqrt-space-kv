@@ -1,0 +1,162 @@
+{
+  "meta": {
+    "chip": "Apple M4",
+    "ram_gb": 34.359738368,
+    "model": "mlx-community/SmolLM-135M-Instruct-4bit",
+    "arch": {
+      "layers": 30,
+      "heads": 9,
+      "kv_heads": 3,
+      "head_dim": 64,
+      "hidden": 576
+    },
+    "date": "2026-07-09",
+    "note": "smaller than Qwen2.5-0.5B used in prior validation"
+  },
+  "runs": [
+    {
+      "exp": "kv-bytes",
+      "s": 256,
+      "kv_mb": 5.89824,
+      "peak_mb": 288.974648,
+      "b": 38,
+      "h": 7,
+      "bpt": 23040.0,
+      "sqrt_theory_mb": 1.0368,
+      "theory_ratio": 0.17578125
+    },
+    {
+      "exp": "kv-bytes",
+      "s": 512,
+      "kv_mb": 11.79648,
+      "peak_mb": 362.015568,
+      "b": 57,
+      "h": 9,
+      "bpt": 23040.0,
+      "sqrt_theory_mb": 1.52064,
+      "theory_ratio": 0.12890625
+    },
+    {
+      "exp": "kv-bytes",
+      "s": 1024,
+      "kv_mb": 23.59296,
+      "peak_mb": 618.00176,
+      "b": 85,
+      "h": 13,
+      "bpt": 23040.0,
+      "sqrt_theory_mb": 2.25792,
+      "theory_ratio": 0.095703125
+    },
+    {
+      "exp": "kv-bytes",
+      "s": 2048,
+      "kv_mb": 47.18592,
+      "peak_mb": 1091.0452,
+      "b": 125,
+      "h": 17,
+      "bpt": 23040.0,
+      "sqrt_theory_mb": 3.27168,
+      "theory_ratio": 0.0693359375
+    },
+    {
+      "exp": "kv-bytes",
+      "s": 4096,
+      "kv_mb": 94.37184,
+      "peak_mb": 1212.162776,
+      "b": 185,
+      "h": 23,
+      "bpt": 23040.0,
+      "sqrt_theory_mb": 4.79232,
+      "theory_ratio": 0.05078125
+    },
+    {
+      "exp": "kv-bytes",
+      "s": 8192,
+      "kv_mb": 188.74368,
+      "peak_mb": 1748.525744,
+      "b": 272,
+      "h": 31,
+      "bpt": 23040.0,
+      "sqrt_theory_mb": 6.98112,
+      "theory_ratio": 0.0369873046875
+    },
+    {
+      "exp": "kv-residency",
+      "s": 1024,
+      "b": 85,
+      "n_keep": 97,
+      "full_kv_mb": 23.59296,
+      "keep_kv_mb": 2.23488,
+      "ratio": 0.0947265625,
+      "save_pct": 90.52734375
+    },
+    {
+      "exp": "kv-residency",
+      "s": 2048,
+      "b": 125,
+      "n_keep": 141,
+      "full_kv_mb": 47.18592,
+      "keep_kv_mb": 3.24864,
+      "ratio": 0.06884765625,
+      "save_pct": 93.115234375
+    },
+    {
+      "exp": "kv-residency",
+      "s": 4096,
+      "b": 185,
+      "n_keep": 207,
+      "full_kv_mb": 94.37184,
+      "keep_kv_mb": 4.76928,
+      "ratio": 0.050537109375,
+      "save_pct": 94.9462890625
+    },
+    {
+      "exp": "kv-residency",
+      "s": 8192,
+      "b": 272,
+      "n_keep": 302,
+      "full_kv_mb": 188.74368,
+      "keep_kv_mb": 6.95808,
+      "ratio": 0.036865234375,
+      "save_pct": 96.3134765625
+    },
+    {
+      "exp": "peak-compare",
+      "s": 512,
+      "peak_full_mb": 368.569168,
+      "peak_recompute_mb": 384.300884,
+      "ratio": 1.042683212177965
+    },
+    {
+      "exp": "peak-compare",
+      "s": 1024,
+      "peak_full_mb": 624.559972,
+      "peak_recompute_mb": 657.217892,
+      "ratio": 1.052289486140812
+    },
+    {
+      "exp": "peak-compare",
+      "s": 2048,
+      "peak_full_mb": 1097.60802,
+      "peak_recompute_mb": 1147.930452,
+      "ratio": 1.0458473617931472
+    },
+    {
+      "exp": "host-paged-attn",
+      "s": 2048,
+      "b": 125,
+      "max_abs_diff": 7.069110870361328e-05,
+      "exact": true
+    }
+  ],
+  "verdict": {
+    "kv_linear": true,
+    "sqrt_save_pct": [
+      90.52734375,
+      93.115234375,
+      94.9462890625,
+      96.3134765625
+    ],
+    "recompute_worse": true
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "meta": {
+    "host": "Darwin 25MBAir.local 25.3.0 Darwin Kernel Version 25.3.0: Wed Jan 28 20:54:55 PST 2026; root:xnu-12377.91.3~2/RELEASE_ARM64_T8132 arm64",
+    "chip": "Apple M4",
+    "ram_gb": 34.359738368,
+    "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+    "arch": {
+      "layers": 24,
+      "heads": 14,
+      "kv_heads": 2,
+      "head_dim": 64
+    },
+    "previous_runs": [
+      {
+        "experiment": "full-kv",
+        "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+        "s": 512,
+        "new_tokens": 4,
+        "block_size": null,
+        "peak_metal_mb": 818.7636032104492,
+        "active_metal_mb": 277.7321891784668,
+        "rss_max_mb": 495.734375,
+        "elapsed_s": 0.3245144998654723,
+        "tokens_per_s": 1590.0676247560837,
+        "notes": "standard mlx prompt cache (full KV)"
+      },
+      {
+        "experiment": "recompute-no-cache",
+        "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+        "s": 512,
+        "new_tokens": 4,
+        "block_size": null,
+        "peak_metal_mb": 973.7030830383301,
+        "active_metal_mb": 417.3904228210449,
+        "rss_max_mb": 495.734375,
+        "elapsed_s": 0.8281701661180705,
+        "tokens_per_s": 623.0603577748718,
+        "notes": "re-forward full prefix each step; no KV retained"
+      },
+      {
+        "experiment": "attn-full-materialize",
+        "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+        "s": 512,
+        "new_tokens": 0,
+        "block_size": null,
+        "peak_metal_mb": 426.06359481811523,
+        "active_metal_mb": 426.049861907959,
+        "rss_max_mb": 495.734375,
+        "elapsed_s": 0.12257212493568659,
+        "tokens_per_s": 0.0,
+        "notes": "real layer0 cache keys shape=(1, 14, 512, 64); score_matrix\u22480.01MiB"
+      },
+      {
+        "experiment": "attn-sqrt-block-stream",
+        "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+        "s": 512,
+        "new_tokens": 0,
+        "block_size": 57,
+        "peak_metal_mb": 428.03016090393066,
+        "active_metal_mb": 426.049861907959,
+        "rss_max_mb": 495.734375,
+        "elapsed_s": 0.07554429210722446,
+        "tokens_per_s": 0.0,
+        "notes": "b=57 h=9 block_tensor\u22480.195MiB max|\u0394|=5.660e-05"
+      },
+      {
+        "experiment": "attn-meta",
+        "s": 512,
+        "max_abs_diff": 5.660206079483032e-05,
+        "exact_enough": true,
+        "b": 57,
+        "h": 9,
+        "full_score_mb": 0.013671875,
+        "block_mb": 0.19482421875
+      }
+    ]
+  },
+  "runs": [
+    {
+      "exp": "kv-bytes-prefill",
+      "s": 512,
+      "kv_mb": 6.291456,
+      "peak_mb": 858.535864,
+      "b": 57,
+      "h": 9,
+      "bpt": 12288.0,
+      "sqrt_theory_mb": 0.811008,
+      "theory_ratio": 0.12890625
+    },
+    {
+      "exp": "kv-bytes-prefill",
+      "s": 1024,
+      "kv_mb": 12.582912,
+      "peak_mb": 1321.877424,
+      "b": 85,
+      "h": 13,
+      "bpt": 12288.0,
+      "sqrt_theory_mb": 1.204224,
+      "theory_ratio": 0.095703125
+    },
+    {
+      "exp": "kv-bytes-prefill",
+      "s": 2048,
+      "kv_mb": 25.165824,
+      "peak_mb": 1661.101912,
+      "b": 125,
+      "h": 17,
+      "bpt": 12288.0,
+      "sqrt_theory_mb": 1.744896,
+      "theory_ratio": 0.0693359375
+    },
+    {
+      "exp": "kv-bytes-prefill",
+      "s": 4096,
+      "kv_mb": 50.331648,
+      "peak_mb": 2159.177512,
+      "b": 185,
+      "h": 23,
+      "bpt": 12288.0,
+      "sqrt_theory_mb": 2.555904,
+      "theory_ratio": 0.05078125
+    },
+    {
+      "exp": "kv-bytes-prefill",
+      "s": 8192,
+      "kv_mb": 100.663296,
+      "peak_mb": 3429.019416,
+      "b": 272,
+      "h": 31,
+      "bpt": 12288.0,
+      "sqrt_theory_mb": 3.723264,
+      "theory_ratio": 0.0369873046875
+    },
+    {
+      "exp": "kv-bytes-prefill",
+      "s": 16384,
+      "kv_mb": 201.326592,
+      "peak_mb": 6367.162128,
+      "b": 399,
+      "h": 42,
+      "bpt": 12288.0,
+      "sqrt_theory_mb": 5.419008,
+      "theory_ratio": 0.02691650390625
+    },
+    {
+      "exp": "attn-SxS",
+      "s": 512,
+      "b": 57,
+      "peak_full_mb": 467.824394,
+      "peak_blk_mb": 467.005206,
+      "scores_mb": 7.340032,
+      "block_kv_mb": 0.204288,
+      "ratio": 0.9982489412469586,
+      "max_abs_diff": NaN,
+      "exact": false,
+      "t_full": 0.5131413750350475,
+      "t_blk": 0.24492395902052522
+    },
+    {
+      "exp": "attn-SxS",
+      "s": 1024,
+      "b": 85,
+      "peak_full_mb": 702.31425,
+      "peak_blk_mb": 686.309142,
+      "scores_mb": 29.360128,
+      "block_kv_mb": 0.30464,
+      "ratio": 0.9772109023845095,
+      "max_abs_diff": NaN,
+      "exact": false,
+      "t_full": 0.6794502499978989,
+      "t_blk": 0.5543279170524329
+    },
+    {
+      "exp": "attn-SxS",
+      "s": 2048,
+      "b": 125,
+      "peak_full_mb": 1299.638026,
+      "peak_blk_mb": 1215.604502,
+      "scores_mb": 117.440512,
+      "block_kv_mb": 0.448,
+      "ratio": 0.9353408238918365,
+      "max_abs_diff": NaN,
+      "exact": false,
+      "t_full": 0.07661904115229845,
+      "t_blk": 1.9783130420837551
+    },
+    {
+      "exp": "attn-SxS",
+      "s": 4096,
+      "b": 185,
+      "peak_full_mb": 3022.745354,
+      "peak_blk_mb": 2640.015126,
+      "scores_mb": 469.762048,
+      "block_kv_mb": 0.66304,
+      "ratio": 0.873383238355314,
+      "max_abs_diff": NaN,
+      "exact": false,
+      "t_full": 0.3026888750027865,
+      "t_blk": 3.291209749877453
+    },
+    {
+      "exp": "isolated-SxS",
+      "s": 1024,
+      "b": 85,
+      "peak_full_mb": 2558.717714,
+      "peak_blk_mb": 477.458208,
+      "ratio": 0.18660057941819524,
+      "scores_theory_mb": 29.360128
+    },
+    {
+      "exp": "isolated-SxS",
+      "s": 2048,
+      "b": 125,
+      "peak_full_mb": 739.667728,
+      "peak_blk_mb": 790.35984,
+      "ratio": 1.068533626763827,
+      "scores_theory_mb": 117.440512
+    },
+    {
+      "exp": "isolated-SxS",
+      "s": 4096,
+      "b": 185,
+      "peak_full_mb": 1840.541456,
+      "peak_blk_mb": 1959.161632,
+      "ratio": 1.0644485217180568,
+      "scores_theory_mb": 469.762048
+    },
+    {
+      "exp": "isolated-SxS",
+      "s": 8192,
+      "b": 272,
+      "peak_full_mb": 6135.8692,
+      "peak_blk_mb": 6463.188768,
+      "ratio": 1.0533452649218793,
+      "scores_theory_mb": 1879.048192
+    }
+  ]
+}

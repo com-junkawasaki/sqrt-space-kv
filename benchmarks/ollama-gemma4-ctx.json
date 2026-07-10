@@ -1,0 +1,72 @@
+{
+  "model": "gemma4:e4b",
+  "chip": "Apple M4",
+  "ram_gb": 34.359738368,
+  "rows": [
+    {
+      "num_ctx": 512,
+      "elapsed_s": 21.92,
+      "prompt_eval_count": 456,
+      "eval_count": 16,
+      "eval_duration_ns": 651501000,
+      "prompt_eval_duration_ns": 1827967000,
+      "runner_rss_mb": 3931.3,
+      "error": null,
+      "ollama_ps": "NAME          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \ngemma4:e4b    c6eb396dbd59    3.3 GB    100% GPU     2048       4 minutes from now",
+      "ok": true
+    },
+    {
+      "num_ctx": 1024,
+      "elapsed_s": 17.49,
+      "prompt_eval_count": 796,
+      "eval_count": 16,
+      "eval_duration_ns": 683247000,
+      "prompt_eval_duration_ns": 3802985000,
+      "runner_rss_mb": 3938.2,
+      "error": null,
+      "ollama_ps": "NAME          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \ngemma4:e4b    c6eb396dbd59    3.3 GB    100% GPU     2048       4 minutes from now",
+      "ok": true
+    },
+    {
+      "num_ctx": 2048,
+      "elapsed_s": 24.89,
+      "prompt_eval_count": 1476,
+      "eval_count": 16,
+      "eval_duration_ns": 738943000,
+      "prompt_eval_duration_ns": 7444498000,
+      "runner_rss_mb": 3916.5,
+      "error": null,
+      "ollama_ps": "NAME          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \ngemma4:e4b    c6eb396dbd59    3.3 GB    100% GPU     2048       4 minutes from now",
+      "ok": true
+    },
+    {
+      "num_ctx": 4096,
+      "elapsed_s": 39.73,
+      "prompt_eval_count": 2836,
+      "eval_count": 16,
+      "eval_duration_ns": 762103000,
+      "prompt_eval_duration_ns": 13713029000,
+      "runner_rss_mb": 3945.7,
+      "error": null,
+      "ollama_ps": "NAME          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \ngemma4:e4b    c6eb396dbd59    3.3 GB    100% GPU     4096       4 minutes from now",
+      "ok": true
+    },
+    {
+      "num_ctx": 8192,
+      "elapsed_s": 65.51,
+      "prompt_eval_count": 5576,
+      "eval_count": 16,
+      "eval_duration_ns": 840728000,
+      "prompt_eval_duration_ns": 33897055000,
+      "runner_rss_mb": 3888.7,
+      "error": null,
+      "ollama_ps": "NAME          ID              SIZE      PROCESSOR    CONTEXT    UNTIL              \ngemma4:e4b    c6eb396dbd59    3.3 GB    100% GPU     8192       4 minutes from now",
+      "ok": true
+    }
+  ],
+  "fit": {
+    "mb_per_token": -0.00509256342405917,
+    "intercept_mb": 3940.245833333334,
+    "mb_per_1k": -5.09256342405917
+  }
+}
