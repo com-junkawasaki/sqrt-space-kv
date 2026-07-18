@@ -1,25 +1,35 @@
 # sqrt-space-kv
 
-**Williams STOC 2025 √t-space → LLM KV-cache residency**
+**A memory-capability technique for LLM decode, not a speed technique —
+validated end-to-end on real hardware (Modal A100 + Apple Silicon).**
 
-Research results home under `com-junkawasaki`: paper package, measured
-benchmarks (Mac Apple Silicon + Modal NVIDIA A100), and pointers to the
-implementation / arXiv submission workflow.
+## Impact, in one table
+
+| Question | Real answer |
+|---|---|
+| Does it actually unlock capability? | **Yes, measured.** GLM-4-9B-Chat-1M (1,048,576-token native context) can only use **6.1%** of that on a 16GB Mac without this — with √S residency + `mmap` paging, the resident set stays tens of MB regardless of S. |
+| Is it actually correct? | **Yes, proven end-to-end.** A real `Cache` subclass fused into a real multi-token `generate()` loop produced **byte-identical** tokens vs. standard full-KV decode — not just a single-tensor numerical spot check. |
+| What does it cost? | **2.2×–3.7× slower decode**, measured two independent ways (isolated transfer + fused generation), worsening with longer context. This is the accepted price of the capability, not a defect. |
+| Does "offloading" even work on unified memory? | **We tested it — mostly no.** On Apple Silicon, moving KV to a plain host buffer does *not* free real memory (RSS goes up). Only `np.memmap`-based paging does (0.0MB RSS cost confirmed up to 6.3GB). A concrete implementation requirement, not a footnote. |
+| How does it compare to the competition? | At sqrt-space-kv's own ~90% compression regime, NVIDIA `kvpress`'s StreamingLLM/Knorm/SnapKV score **0% accuracy** on needle retrieval. sqrt-space-kv is exact at any ratio — the tradeoff is exactness vs. the latency tax above. |
+| What's still open? | True MLA-absorbed-cache composability (needs vLLM/SGLang, CUDA-only) and a production `:sqrt-checkpoint` kernel. Reported honestly, not glossed over. |
+
+Full evidence trail (M0–M6, real Modal A100 + real Apple Silicon
+experiments, every number reproducible from committed scripts):
+`RESULTS.md` and the superproject ADR
+`com-junkawasaki/root` → `90-docs/adr/2607182800-sqrt-space-kv-mla-composability-maturity-review.edn`.
+
+## Metadata
 
 | | |
 |---|---|
-| **Value proposition** | Memory capability, not speed — run generation models under limited memory; decode slowdown is an accepted cost (owner reframing, 2026-07-18) |
 | **Primary claim** | √S checkpoint residency cuts measured KV storage **90–97%** for S∈[1k,16k] |
-| **Models** | 135M (Mac MLX) → 14B (Modal A100 bf16) |
-| **Exactness** | Host-paged online-softmax block attention is numerically exact (max\|Δ\|≈7e-5) |
-| **Negative** | Whole-prefix recompute each token *increases* peak device memory |
+| **Models tested** | 135M (Mac MLX) → 35B-A3B MoE / 14B dense (Modal A100 bf16) → GLM-4-9B-Chat-1M / Qwen2.5-14B (Mac, real weights) |
 | **arXiv** | **submitted** 2026-07-10 · draft `7807366` · primary **cs.CL** · account `junkawasaki-n24y` |
 | **Public id** | *pending announce* (update when `arXiv:YYMM.NNNNN` appears) |
 | **Code** | [`gftdcojp/cloud-murakumo`](https://github.com/gftdcojp/cloud-murakumo) (`:serve :kv-policy`) |
 | **Submit actor** | [`kotoba-lang/arxiv`](https://github.com/kotoba-lang/arxiv) |
-| **HF paper dataset** | [`com-junkawasaki/sqrt-space-kv-paper`](https://huggingface.co/datasets/com-junkawasaki/sqrt-space-kv-paper) |
-| **Qwen3.6 MoE** | 35B-A3B Modal: **88.5%** KV save @ S=16k (hybrid; see benchmarks) |
-| **Maturity review** | 2026-07-18, M0–M4 **landed**, M5–M6 landed-with-caveats (GPU) + M5-mac/M6-mac landed (local). Modal A100: exact end-to-end token match (M3), but re-paging every decode step is **2.2x–3.7x slower** than full-KV decode (M2/M3) — accepted cost per the memory-capability framing above. At ~90–97% compression, competing lossy presses (H2O/SnapKV/StreamingLLM) score **0% needle-retrieval accuracy** (M4). MLA composability (M5, cross-confirmed on both HF/CUDA and mlx-lm/Metal) found neither reference implementation actually caches the compressed latent — real composability question stays open, needs a CUDA absorbed-cache engine (vLLM/SGLang). **Mac-native (M6-mac): `np.memmap` gives real 0MB-RSS lazy paging up to 794MB tested; naive write+del does not** — an actionable, hardware-specific implementation requirement for `:sqrt-plus-page`. Full production kernel + vLLM/SGLang A/B remain open — see `RESULTS.md` and superproject ADR `2607182800-sqrt-space-kv-mla-composability-maturity-review.edn` |
+| **HF paper card** | [`com-junkawasaki/sqrt-space-kv-paper`](https://huggingface.co/datasets/com-junkawasaki/sqrt-space-kv-paper) |
 
 ## Layout
 
