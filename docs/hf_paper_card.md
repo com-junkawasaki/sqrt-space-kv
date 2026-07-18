@@ -1,5 +1,6 @@
 ---
-title: "Simulating Autoregressive Memory with Square-Root Space"
+title: "sqrt(S) KV-Cache Residency for Long-Context LLM Decode"
+former_title: "Simulating Autoregressive Memory with Square-Root Space"
 authors:
   - Jun Kawasaki
   - cloud-murakumo / com-junkawasaki
@@ -109,13 +110,17 @@ something either project's numbers alone can answer for you.
   inspiration for the checkpoint-stride formula, not a technical dependency;
   the underlying checkpoint+recompute pattern predates it (Griewank;
   Chen et al. 2016, "Training Deep Nets with Sublinear Memory Cost").
-- arXiv draft: 7807366 (cs.CL, submitted 2026-07-10; public id pending)
+- arXiv draft: 7807366 (cs.CL, submitted 2026-07-10; **on hold** in
+  moderation as of 2026-07-18, public id pending; paper revised 2026-07-18
+  to de-emphasize the Williams framing while on hold — not yet resubmitted)
 
 ## Cite
 
 ```bibtex
 @misc{sqrt-space-kv-2026,
-  title  = {Simulating Autoregressive Memory with Square-Root Space},
+  title  = {sqrt(S) KV-Cache Residency for Long-Context LLM Decode: Real
+            Costs, Real Correctness, and a Real Capability Unlock on
+            Memory-Constrained Hardware},
   author = {Kawasaki, Jun},
   year   = {2026},
   note   = {Code: github.com/gftdcojp/cloud-murakumo; Results: github.com/com-junkawasaki/sqrt-space-kv},
