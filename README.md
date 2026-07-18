@@ -18,6 +18,7 @@ implementation / arXiv submission workflow.
 | **Submit actor** | [`kotoba-lang/arxiv`](https://github.com/kotoba-lang/arxiv) |
 | **HF paper dataset** | [`com-junkawasaki/sqrt-space-kv-paper`](https://huggingface.co/datasets/com-junkawasaki/sqrt-space-kv-paper) |
 | **Qwen3.6 MoE** | 35B-A3B Modal: **88.5%** KV save @ S=16k (hybrid; see benchmarks) |
+| **Maturity review** | 2026-07-18 external review vs. 2026 KV-cache landscape (H2O/SnapKV/MLA/NEO/InfLLM etc.): current numbers are device-resident-**byte snapshots**, not yet validated throughput/quality/MLA-composability results — see `RESULTS.md` addendum and superproject ADR `2607182800-sqrt-space-kv-mla-composability-maturity-review.edn` |
 
 ## Layout
 

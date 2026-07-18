@@ -81,6 +81,45 @@ Save percentages match Mac / 7B to three digits — ratio is |K|/S, not width.
 
 See `benchmarks/` for JSON + markdown notes. Paper: `paper/sqrt_space_kv.tex`.
 
+## Addendum — maturity review (2026-07-18)
+
+An external literature review against the 2026 KV-cache research landscape
+(eviction: H2O/StreamingLLM/SnapKV/PyramidKV; quantization: KIVI/GEAR/
+TurboQuant; depth-share: MiniCache; architecture-native: **MLA**, adopted by
+DeepSeek-V2/V3, Kimi K2, GLM-5; offload/tiering: NEO/LMCache/InfLLM/
+FlexiCache/KVPR — the class this repo's method actually belongs to) found
+the current 90–97% numbers to be **device-resident-byte snapshots only**,
+not validated efficiency claims. Full analysis and a maturity ladder
+(M0–M6, M2–M5 currently open) are recorded in the superproject ADR:
+
+`com-junkawasaki/root` → `90-docs/adr/2607182800-sqrt-space-kv-mla-composability-maturity-review.edn`
+
+Open before this method can be called "validated" (not "proved wrong",
+just **not yet measured**):
+
+1. **Real decode throughput/latency with host paging** — bytes saved on
+   device says nothing about tokens/sec once PCIe bandwidth (16–32 GB/s in
+   2026) is on the critical path.
+2. **Head-to-head vs. NEO/InfLLM/LMCache/FlexiCache and vs. H2O/SnapKV**
+   using NVIDIA's `kvpress` harness (30+ methods, LongBench-based) — the
+   only baseline tested so far is "full KV" and a straw-man "recompute
+   everything" policy.
+3. **Downstream task quality** (LongBench / RULER / Needle-in-a-Haystack) —
+   only a single-point `max|Δ|` numerical check exists today.
+4. **MLA composability** — MLA compresses *bytes per token* (the width
+   axis); √S residency compresses *how many token slots stay resident*
+   (the sequence axis). The save-ratio law (`≈|K|/S`, width-independent)
+   suggests these compose multiplicatively in theory, but **no MLA model
+   (DeepSeek-V2-Lite etc.) has been benchmarked** — the "what does this add
+   on top of MLA" question is an untested hypothesis, not a result. See the
+   ADR for the recommended DeepSeek-V2-Lite experiment design.
+
+The Williams STOC 2025 framing should also be read as inspiration for the
+checkpoint-stride formula, not a technical dependency — the underlying
+checkpoint+recompute pattern predates Williams (Griewank's checkpointing
+theory, Chen et al. 2016 "Training Deep Nets with Sublinear Memory Cost",
+already cited in `paper/references.bib`).
+
 ## Addendum — Qwen3.6-35B-A3B (Modal A100-80GB, 2026-07-10)
 
 User request: "Qwen 3.6 26B A3B". Public open model is **35B-A3B** (total/activated).
