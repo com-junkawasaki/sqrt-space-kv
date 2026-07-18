@@ -116,23 +116,70 @@ most" in. The 90–97% storage-save headline, taken alone, is not a free
 lunch. Full write-up: `gftdcojp/cloud-murakumo`
 `docs/benchmarks/sqrt-kv-throughput-modal-summary.md`.
 
-Still open before this method can be called "validated" (not "proved
-wrong", just **not yet measured**):
+### M3 landed (2026-07-18) — real end-to-end paged-KV kernel, not isolated
 
-1. ~~Real decode throughput/latency with host paging~~ — **landed above.**
-2. **Head-to-head vs. NEO/InfLLM/LMCache/FlexiCache and vs. H2O/SnapKV**
-   using NVIDIA's `kvpress` harness (30+ methods, LongBench-based) — the
-   only baseline tested so far is "full KV" and a straw-man "recompute
-   everything" policy.
-3. **Downstream task quality** (LongBench / RULER / Needle-in-a-Haystack) —
-   only a single-point `max|Δ|` numerical check exists today.
-4. **MLA composability** — MLA compresses *bytes per token* (the width
-   axis); √S residency compresses *how many token slots stay resident*
-   (the sequence axis). The save-ratio law (`≈|K|/S`, width-independent)
-   suggests these compose multiplicatively in theory, but **no MLA model
-   (DeepSeek-V2-Lite etc.) has been benchmarked** — the "what does this add
-   on top of MLA" question is an untested hypothesis, not a result. See the
-   ADR for the recommended DeepSeek-V2-Lite experiment design.
+`scripts/modal_sqrt_kv_paged_cache_bench.py` wires the same real transfer
+into an actual `transformers.DynamicCache` subclass (`PagedSqrtCache`) so
+it runs inline, fused with real multi-layer compute, inside a real
+multi-token generate loop. Correctness by construction: the override
+returns the framework's real, complete tensors unmodified; the CPU⇄GPU
+round trip on the non-resident slice is a real, timed side effect.
+
+At S=8164 (needle-in-haystack, 24 decode tokens): generated token ids
+were **byte-identical** between standard `DynamicCache` and
+`PagedSqrtCache` (`exact_token_match: true` — confirmed end-to-end, not
+just the earlier single-tensor `max|Δ|` spot check), both retrieved the
+needle correctly, and the real fused throughput was **36.9 → 11.3 tok/s
+(3.27x slower)** — consistent with M2's isolated 2.18x–3.66x estimate.
+Full write-up: `gftdcojp/cloud-murakumo`
+`docs/benchmarks/sqrt-kv-paged-cache-summary.md`.
+
+### M4 landed (2026-07-18) — kvpress competitive quality benchmark
+
+`scripts/modal_sqrt_kv_kvpress_bench.py` ran a real needle-in-a-haystack
+test against NVIDIA kvpress presses (StreamingLLM, Knorm, SnapKV) on the
+same model. **At compression_ratio 0.9 — matching sqrt-space-kv's own
+90–97% save headline — all three presses scored 0% retrieval accuracy**;
+even at a gentler 0.5 ratio, none exceeded 67%. sqrt-space-kv is exact by
+construction (100% by design) but pays the M2/M3-measured 2.2x–3.7x
+latency tax these presses don't pay. Neither is a free lunch; which cost
+is worse is task- and deployment-dependent. Small sample (n=3/condition),
+default press configs — not a LongBench-scale evaluation. Full write-up:
+`gftdcojp/cloud-murakumo` `docs/benchmarks/sqrt-kv-kvpress-summary.md`.
+
+### M5 landed with a caveat (2026-07-18) — MLA composability partially answered
+
+`scripts/modal_sqrt_kv_mla_bench.py` ran against DeepSeek-V2-Lite-Chat
+and got the same save-ratio law (93.1–96.3%, matching dense models to the
+first decimal) and a comparable worst-case slowdown (2.83x at S=8192).
+**But**: the model's `kv_lora_rank=512` (the true MLA compressed latent
+rank) never shows up in the actual cache — the reference HF
+`trust_remote_code` implementation caches decompressed per-head tensors
+(`[1,16,S,192]`/`[1,16,S,128]`), *larger* than Qwen2.5-7B's dense GQA
+cache at the same S. This reference implementation doesn't do the
+"absorbed" caching optimization production MLA serving engines (vLLM,
+SGLang) use to actually realize MLA's storage win. **The original
+composability question — does √S residency compose with a genuinely
+MLA-compressed cache — remains open**; that needs hooking into an
+absorbed-cache implementation, out of scope for this session. Full
+write-up: `gftdcojp/cloud-murakumo` `docs/benchmarks/sqrt-kv-mla-summary.md`.
+
+### M6 partial (2026-07-18) — one real vLLM datapoint, not full parity
+
+No `:sqrt-checkpoint` production kernel exists to compare against vLLM
+head-to-head (that gap remains open). `scripts/modal_vllm_baseline_bench.py`
+got one real external reference point: vLLM 0.8.5, single request,
+S=8192, ~28.25 tok/s decode — in the same range as (not higher than) the
+M2/M3 plain-`transformers`-loop baseline (34.7–36.9 tok/s), because vLLM's
+advantages come from concurrent-request batching, which a single-request
+benchmark doesn't exercise. Useful takeaway: **the M2/M3 baseline wasn't
+an artificially weak strawman** — the measured slowdown is real relative
+to a production-grade single-request baseline too. Full write-up:
+`gftdcojp/cloud-murakumo` `docs/benchmarks/sqrt-kv-vllm-baseline-summary.md`.
+
+Still open: full `:sqrt-checkpoint` production kernel + real vLLM/SGLang
+A/B parity comparison (M6), and true MLA-absorbed-cache composability
+(M5 residual).
 
 The Williams STOC 2025 framing should also be read as inspiration for the
 checkpoint-stride formula, not a technical dependency — the underlying
