@@ -414,8 +414,9 @@ We reframe this paper's value proposition accordingly: the contribution is
 not decode speed --- decode is reliably slower, sometimes by nearly $4\times$
 --- but the ability to run a longer context or a model that would not
 otherwise fit a memory budget at all, which \Cref{sec:mac} shows is a real,
-measurable, sometimes dramatic effect (an $8.2\times$ increase in usable
-context on a real model at $16\,\mathrm{GB}$).
+measurable, sometimes dramatic effect ($1{,}048{,}576/64{,}374\approx 16.3\times$
+more usable context on a real model at $16\,\mathrm{GB}$, from $6.1\%$ to
+effectively all of its native window).
 
 Product surface: \texttt{cloud-murakumo} \texttt{:serve :kv-policy}
 (\texttt{:sqrt-checkpoint} / \texttt{:sqrt-plus-page}); no production
