@@ -1,17 +1,31 @@
 {:submission/id :sqrt-space-kv
- :submission/state :submitted
+ :submission/state :on-hold
  :submission/arxiv-draft-id "7807366"
  :submission/url "https://arxiv.org/user/"
  :submission/arxiv-account "junkawasaki-n24y"
  :submission/primary-category "cs.CL"
  :submission/cross-lists ["cs.LG" "cs.CC"]
  :submission/license "cc-by-4.0"
- :submission/updated-at "2026-07-10"
+ :submission/updated-at "2026-07-18"
  :submission/arxiv-id nil ; fill when announced (e.g. "2607.xxxxx")
  :submission/notes
  ["Owner-confirmed final Submit 2026-07-10 (draft 7807366)."
   "Primary cs.CL (N24 endorsement map: only CL unlocked among probed subjects)."
   "Abstract metadata must be pure ASCII (no ≈/√)."
+  "2026-07-18: owner confirmed via arxiv.org/user status page — submission is ON HOLD"
+  "  (moderator review before announcement), not just normal processing latency."
+  "  No specific hold reason captured yet (owner checked, reported state only)."
+  "  Plausible cause: ADR-2607182800's own maturity review already flagged the"
+  "  Williams STOC 2025 lineage framing as overclaiming relative to what the"
+  "  paper actually implements (checkpoint+recompute predates Williams; no"
+  "  Tree Evaluation / Cook-Mertz machinery is used) -- exactly the kind of"
+  "  framing an arXiv moderator might question, especially combined with the"
+  "  cs.CL+cs.LG+cs.CC cross-list. Not confirmed as the actual hold reason."
+  "  No public arXiv ID exists yet, so no real HF Papers page"
+  "  (huggingface.co/papers/<id>) can be created — huggingface.co/papers/submit"
+  "  requires a public arXiv ID, and papers become ineligible for that specific"
+  "  submission flow 7 days after their arXiv publication date, so once this"
+  "  clears the hold and announces, submit to HF Papers promptly."
   "Public results: github.com/com-junkawasaki/sqrt-space-kv"
   "Code: github.com/gftdcojp/cloud-murakumo"
   "Actor: github.com/kotoba-lang/arxiv"
