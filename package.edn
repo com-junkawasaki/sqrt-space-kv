@@ -1,5 +1,7 @@
 {:research/id :sqrt-space-kv
  :research/title
+ "sqrt(S) KV-Cache Residency for Long-Context LLM Decode: Real Costs, Real Correctness, and a Real Capability Unlock on Memory-Constrained Hardware"
+ :research/prior-title
  "Simulating Autoregressive Memory with Square-Root Space: From Williams' Time-Space Theorem to Practical KV-Cache Residency"
  :research/org "com-junkawasaki"
  :research/repo "github.com/com-junkawasaki/sqrt-space-kv"
@@ -10,22 +12,60 @@
  :research/cross-lists ["cs.LG" "cs.CC"]
  :research/arxiv-draft-id "7807366"
  :research/arxiv-account "junkawasaki-n24y"
- :research/arxiv-state :submitted
+ :research/arxiv-state :on-hold
  :research/arxiv-id nil ; fill when announced
  :research/submitted-at "2026-07-10"
+ :research/revised-at "2026-07-18"
+ :research/revision-note
+ "2026-07-18: paper revised while submission is on hold in arXiv moderation.
+  De-emphasized Williams STOC 2025 as the theoretical foundation (now cited
+  as inspiration for the specific stride formula only; primary lineage is
+  classical checkpointing -- Griewank-Walther 2000, Chen et al. 2016).
+  Reframed value proposition as memory capability under constraint, not
+  speed. Added real M2-M6 findings: end-to-end correctness (exact token
+  match), real 2-method-validated decode cost (2.2x-3.7x), competitive
+  comparison vs kvpress (StreamingLLM/Knorm/SnapKV score 0% at ~90%
+  compression), MLA composability gap (cross-ecosystem confirmed, both
+  HF and mlx-lm skip absorbed caching), and the Apple Silicon
+  memory-capability validation (mmap vs naive offload; GLM-4-9B-Chat-1M
+  real capability-unlock numbers). Not yet resubmitted to arXiv (requires
+  human login action); published to the HF dataset in the interim -- see
+  :research/related :hf-dataset."
  :research/related
  {:code "github.com/gftdcojp/cloud-murakumo"
   :arxiv-actor "github.com/kotoba-lang/arxiv"
-  :arxiv-package "orgs/kotoba-lang/arxiv/submissions/sqrt-space-kv"}
+  :arxiv-package "orgs/kotoba-lang/arxiv/submissions/sqrt-space-kv"
+  :hf-dataset "huggingface.co/datasets/com-junkawasaki/sqrt-space-kv-paper"
+  :maturity-adr "com-junkawasaki/root 90-docs/adr/2607182800-sqrt-space-kv-mla-composability-maturity-review.edn"}
  :research/claims
  [{:id :kv-save
    :statement "√S residency reduces measured KV storage 90-97% for S in [1k,16k]"
    :evidence ["benchmarks/sqrt-kv-mac-m4-validation.md"
               "benchmarks/sqrt-kv-modal-summary.md"]}
-  {:id :attention-exact
-   :statement "Host-paged online-softmax block attention is numerically exact"
+  {:id :attention-exact-single-tensor
+   :statement "Host-paged online-softmax block attention is numerically exact (single-tensor spot check)"
    :evidence ["benchmarks/sqrt-kv-mac-m4-smollm135.md"]}
+  {:id :attention-exact-end-to-end
+   :statement "A real Cache subclass fused into a real multi-token generate() loop produces byte-identical tokens vs. standard full-KV decode"
+   :evidence ["cloud-murakumo docs/benchmarks/sqrt-kv-paged-cache-summary.md"]}
   {:id :recompute-negative
    :statement "Whole-prefix recompute each token increases peak device memory"
-   :evidence ["benchmarks/sqrt-kv-mac-m4-validation.md"]}]
- :research/updated-at "2026-07-10"}
+   :evidence ["benchmarks/sqrt-kv-mac-m4-validation.md"]}
+  {:id :decode-cost
+   :statement "Re-paging every decode step is 2.2x-3.7x slower than full-KV decode, cross-validated by two independent measurement methods, worsening with S"
+   :evidence ["cloud-murakumo docs/benchmarks/sqrt-kv-throughput-modal-summary.md"
+              "cloud-murakumo docs/benchmarks/sqrt-kv-paged-cache-summary.md"]}
+  {:id :competitive-comparison
+   :statement "At ~90% compression matching this method's own headline numbers, kvpress's StreamingLLM/Knorm/SnapKV score 0% needle-retrieval accuracy; sqrt(S) residency is exact by construction"
+   :evidence ["cloud-murakumo docs/benchmarks/sqrt-kv-kvpress-summary.md"]}
+  {:id :mla-composability-gap
+   :statement "Neither the HuggingFace nor the mlx-lm reference implementation of DeepSeek-V2 caches the MLA-compressed latent; true composability with an absorbed-cache implementation remains open"
+   :evidence ["cloud-murakumo docs/benchmarks/sqrt-kv-mla-summary.md"
+              "cloud-murakumo docs/benchmarks/sqrt-kv-mac-mla-source-inspection.md"]}
+  {:id :unified-memory-mechanism
+   :statement "On Apple Silicon unified memory, naive host offload (write+del) does not free real RSS; np.memmap-based paging does, confirmed to 0.0MB RSS cost up to 6.3GB non-resident"
+   :evidence ["cloud-murakumo docs/benchmarks/sqrt-kv-mac-memory-capability-summary.md"]}
+  {:id :capability-unlock
+   :statement "GLM-4-9B-Chat-1M (native 1,048,576-token context) reaches only 6.1%/24.8% of native context on 16GB/32GB Mac without this technique; real measured bpt + weight size, not estimated"
+   :evidence ["cloud-murakumo docs/benchmarks/sqrt-kv-mac-model-suitability-summary.md"]}]
+ :research/updated-at "2026-07-18"}
