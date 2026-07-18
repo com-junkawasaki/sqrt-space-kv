@@ -90,16 +90,36 @@ DeepSeek-V2/V3, Kimi K2, GLM-5; offload/tiering: NEO/LMCache/InfLLM/
 FlexiCache/KVPR — the class this repo's method actually belongs to) found
 the current 90–97% numbers to be **device-resident-byte snapshots only**,
 not validated efficiency claims. Full analysis and a maturity ladder
-(M0–M6, M2–M5 currently open) are recorded in the superproject ADR:
+(M0–M6) are recorded in the superproject ADR:
 
 `com-junkawasaki/root` → `90-docs/adr/2607182800-sqrt-space-kv-mla-composability-maturity-review.edn`
 
-Open before this method can be called "validated" (not "proved wrong",
-just **not yet measured**):
+### M2 landed (2026-07-18) — real decode-throughput cost of host paging
 
-1. **Real decode throughput/latency with host paging** — bytes saved on
-   device says nothing about tokens/sec once PCIe bandwidth (16–32 GB/s in
-   2026) is on the critical path.
+Item 1 below is no longer open. `gftdcojp/cloud-murakumo`
+`scripts/modal_sqrt_kv_throughput_bench.py` measured a real
+`.to('cpu')`/`.to('cuda')` round trip on the actual non-resident K/V
+tensors on a Modal A100, against a real baseline decode loop
+(Qwen2.5-7B-Instruct bf16):
+
+| S | baseline (full-KV) | non-resident KV | measured bandwidth | **re-page every step** | amortized-once (optimistic) |
+|--:|---:|---:|---:|---:|---:|
+| 8192  | 34.7 tok/s | 452 MB | 13.3 GB/s | **15.9 tok/s (2.18x slower)** | 32.3 tok/s (1.07x slower) |
+| 16384 | 43.8 tok/s | 914 MB | 15.0 GB/s | **12.0 tok/s (3.66x slower)** | 37.5 tok/s (1.17x slower) |
+
+The "re-page every step" column is the operationally honest one: exact
+online-softmax attention needs the full history for every new query, and
+the current `:sqrt-checkpoint` design has no cross-step page cache. Under
+that reading, **the slowdown gets worse as S grows** — exactly the
+long-context regime this project's own §6.1 says the technique "matters
+most" in. The 90–97% storage-save headline, taken alone, is not a free
+lunch. Full write-up: `gftdcojp/cloud-murakumo`
+`docs/benchmarks/sqrt-kv-throughput-modal-summary.md`.
+
+Still open before this method can be called "validated" (not "proved
+wrong", just **not yet measured**):
+
+1. ~~Real decode throughput/latency with host paging~~ — **landed above.**
 2. **Head-to-head vs. NEO/InfLLM/LMCache/FlexiCache and vs. H2O/SnapKV**
    using NVIDIA's `kvpress` harness (30+ methods, LongBench-based) — the
    only baseline tested so far is "full KV" and a straw-man "recompute
