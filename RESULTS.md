@@ -229,6 +229,31 @@ MLA's absorbed-cache optimization; only vLLM/SGLang (CUDA-only) implement
 it. Full write-up: `gftdcojp/cloud-murakumo`
 `docs/benchmarks/sqrt-kv-mac-mla-source-inspection.md`.
 
+### Model suitability on 16GB/32GB Mac (2026-07-18) — which models actually need this
+
+Real bpt measured from real weights + a real prefill (not spec-sheet
+estimates) on two mlx-community models, to answer: which real models are
+KV-cache-bound (not weight-bound) on consumer Apple Silicon RAM tiers?
+
+| Model | weights (real) | bpt (real) | native context | S_max @ 16GB w/o technique | S_max @ 32GB w/o technique |
+|---|---:|---:|---:|---:|---:|
+| Qwen2.5-14B-Instruct-4bit | 8.32GB | 192.0 KB/tok | 32,768 | 23,798 (**72.6%** of native) | 105,178 (**321%**, exceeds native) |
+| GLM-4-9B-Chat-1M-6bit | 7.73GB | 80.0 KB/tok | 1,048,576 | 64,374 (**6.1%** of native) | 259,687 (**24.8%** of native) |
+
+**GLM-4-9B-Chat-1M is the clear "KV too heavy to run" case, not Qwen2.5-14B.**
+Qwen2.5-14B's real native context on this MLX conversion is 32k (not an
+extended 128k some Qwen2.5 configs expose); 16GB already reaches 72.6% of
+it — a real but modest gap, and 32GB already exceeds it. GLM-4-9B-Chat-1M's
+native context (1,048,576) is genuinely huge — weights are cheap (7.73GB)
+but the KV cache alone caps a 16GB Mac at **6.1%** and a 32GB Mac at
+**24.8%** of what the model is actually designed to do. That's the
+textbook target for `:sqrt-plus-page`. mmap-lazy-paging (M6-mac) was
+re-confirmed at real production scale on both — 6.3GB non-resident
+(Qwen2.5-14B, +0.1MB RSS delta) and 2.6GB non-resident (GLM-4-9B,
++0.0MB RSS delta) — not just the smaller model tested first. Full
+write-up: `gftdcojp/cloud-murakumo`
+`docs/benchmarks/sqrt-kv-mac-model-suitability-summary.md`.
+
 The Williams STOC 2025 framing should also be read as inspiration for the
 checkpoint-stride formula, not a technical dependency — the underlying
 checkpoint+recompute pattern predates Williams (Griewank's checkpointing
