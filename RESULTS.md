@@ -260,6 +260,52 @@ checkpoint+recompute pattern predates Williams (Griewank's checkpointing
 theory, Chen et al. 2016 "Training Deep Nets with Sublinear Memory Cost",
 already cited in `paper/references.bib`).
 
+### Does this work on video/image models, not just text? (2026-07-18)
+
+Real answer, three tests, not one guess — it depends entirely on whether
+generation is *autoregressive* (real causal KV cache — this technique
+applies directly) or *bidirectional diffusion* (no KV cache across
+generation steps — a different mechanism applies, and only for training).
+
+1. **Autoregressive image tokens — landed.** LlamaGen-B's real architecture
+   (dim=768, 12 layers, 12 heads, no GQA, 16,384-token image-codebook
+   vocabulary — not text) via `transformers.LlamaConfig`, random weights
+   (tests mechanism transfer, not image quality). The exact same
+   `PagedSqrtCache` from M3, unmodified, produces `exact_token_match=true`
+   at S=2048 and S=8192, with a 1.80x–1.83x slowdown — same order of
+   magnitude as the CUDA text-model findings. **The mechanism transfers to
+   a non-text vocabulary with zero code changes.** Full write-up:
+   `gftdcojp/cloud-murakumo`
+   `docs/benchmarks/sqrt-kv-image-token-llamagen-summary.md`.
+
+2. **Autoregressive video — grounded projection, not a local run.** MAGI-1
+   (Sand AI) confirms real block-causal + GQA architecture (the structural
+   precondition for this technique) with a claimed 4,000,000-token max
+   context. Real published specs (34 layers, dim=3072, 128 heads/8 KV
+   groups) give bpt=25.5 KB/token — leaner than any text model this
+   project measured, because MAGI-1 is engineered specifically to survive
+   its own context claim — yet full KV at that claimed max context is
+   still **104.4 GB**. Not locally executed (CUDA-oriented research code,
+   no Mac port); explicitly labeled as a projection from published specs,
+   not an empirical result. Full write-up: `gftdcojp/cloud-murakumo`
+   `docs/benchmarks/sqrt-kv-autoregressive-video-magi1-projection.md`.
+
+3. **Bidirectional diffusion (WAN/HunyuanVideo/CogVideoX-class mainstream
+   video gen) — a self-correction.** An earlier casual answer in
+   conversation claimed classical activation checkpointing would help
+   these models the way `sqrt-space-kv` helps causal decode. Tested rather
+   than assumed (real DiT-L/2 dims, `torch.utils.checkpoint`, measured
+   Apple M4 MPS memory): checkpointing gives **exactly zero benefit during
+   inference/generation** (ratio=1.000 at both S=2048 and S=8192 — no
+   backward pass means nothing is retained to checkpoint). It **is** a
+   real, dramatic benefit for **training**: at S=8192, no-checkpoint OOMs
+   wanting >42 GB, while checkpointing fits at 19.5 GB. Correct but
+   narrower claim: this matters for fine-tuning a diffusion model locally,
+   not for generating with one — and it's decades-old technology (this
+   project's own primary cited lineage), not a new `sqrt-space-kv`
+   contribution. Full write-up: `gftdcojp/cloud-murakumo`
+   `docs/benchmarks/sqrt-kv-dit-activation-checkpoint-summary.md`.
+
 ## Addendum — Qwen3.6-35B-A3B (Modal A100-80GB, 2026-07-10)
 
 User request: "Qwen 3.6 26B A3B". Public open model is **35B-A3B** (total/activated).

@@ -13,6 +13,7 @@ validated end-to-end on real hardware (Modal A100 + Apple Silicon).**
 | Does "offloading" even work on unified memory? | **We tested it — mostly no.** On Apple Silicon, moving KV to a plain host buffer does *not* free real memory (RSS goes up). Only `np.memmap`-based paging does (0.0MB RSS cost confirmed up to 6.3GB). A concrete implementation requirement, not a footnote. |
 | How does it compare to the competition? | At sqrt-space-kv's own ~90% compression regime, NVIDIA `kvpress`'s StreamingLLM/Knorm/SnapKV score **0% accuracy** on needle retrieval. sqrt-space-kv is exact at any ratio — the tradeoff is exactness vs. the latency tax above. |
 | What's still open? | True MLA-absorbed-cache composability (needs vLLM/SGLang, CUDA-only) and a production `:sqrt-checkpoint` kernel. Reported honestly, not glossed over. |
+| Does this work on video/image models, not just text? | **Depends on the architecture — tested, not guessed.** Autoregressive image tokens (LlamaGen-B real specs): mechanism transfers with zero code changes, exact match confirmed. Autoregressive video (MAGI-1 real specs): a 104GB-KV grounded projection, not locally run. Bidirectional diffusion (WAN/HunyuanVideo-class): activation checkpointing gives **zero** benefit for generation (self-correcting an earlier casual claim), real benefit only for training. |
 
 Full evidence trail (M0–M6, real Modal A100 + real Apple Silicon
 experiments, every number reproducible from committed scripts):
