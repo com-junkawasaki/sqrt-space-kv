@@ -15,6 +15,13 @@ We do **not** claim Transformers are multitape TMs. We transfer the
 **block-size balancing** idea from Williams' TIME\[t\] ⊆ SPACE\[√(t log t)\]
 result to KV residency policy.
 
+**Value proposition (owner reframing, 2026-07-18): this is a memory-capability
+technique, not a speed technique.** The target is running text/video/image
+generation models under *limited memory*, accepting slower decode as the
+price for fitting a longer context or a bigger model at all. Read the
+2.2x–3.7x decode-slowdown numbers below in that light — they are the
+accepted cost of the capability, not a defect to be explained away.
+
 ## Mac (Apple M4, 32 GB)
 
 ### SmolLM-135M-Instruct-4bit (MLX)
@@ -180,6 +187,47 @@ to a production-grade single-request baseline too. Full write-up:
 Still open: full `:sqrt-checkpoint` production kernel + real vLLM/SGLang
 A/B parity comparison (M6), and true MLA-absorbed-cache composability
 (M5 residual).
+
+### M6-mac landed (2026-07-18) — real memory-capability test on unified memory
+
+All of M2/M3/M4/M6's numbers above are from discrete NVIDIA GPUs (real
+PCIe bus between CPU and GPU memory). Apple Silicon shares ONE physical
+memory pool between CPU and GPU — a fundamentally different architecture
+that raises a question the GPU numbers can't answer: does moving KV off
+the GPU-tracked memory pool free any usable memory there at all?
+
+Real test on this Mac (M4, Qwen2.5-0.5B, all 24 layers, real prefill,
+real process RSS via `ps -o rss=` — not a monotonic high-water-mark) at
+non-resident payloads of 97MB/395MB/794MB:
+
+- **Moving to numpy ("cpu-move")**: RSS goes *up* by ~the moved size in
+  all 3 cases — confirms unified memory means this isn't a real win here.
+- **Naive disk paging (`write()`+`del()`)**: mostly doesn't free memory
+  either (1/3 cases), except one crossover at the largest scale
+  (-180.8MB at 794MB) — plausibly an allocator large-allocation
+  mmap-threshold effect, not a mechanism to rely on.
+- **`np.memmap` (untouched)**: **+0.0MB RSS at all three scales up to
+  794MB.** Touching only 1/24 layers costs roughly that slice, not the
+  whole file — genuine on-demand partial residency.
+
+**Actionable finding: `mmap`-backed storage for the non-resident tier is
+the architecturally correct mechanism on Apple Silicon, not the
+serialize/deserialize pattern used by this project's Modal scripts so
+far.** `cloud-murakumo`'s eventual `:sqrt-plus-page` kernel should use
+`mmap` specifically for Apple Silicon targets. Full write-up:
+`gftdcojp/cloud-murakumo` `docs/benchmarks/sqrt-kv-mac-memory-capability-summary.md`.
+
+### M5-mac (2026-07-18) — same MLA-cache gap confirmed in a second ecosystem
+
+Source-only check (no download — DeepSeek-V2-Lite doesn't fit this Mac's
+limited free disk): `mlx-lm`'s own DeepSeek-V2 implementation
+(`mlx_lm/models/deepseek_v2.py`) decompresses via `kv_b_proj` **before**
+`cache.update_and_fetch(...)`, caching the same non-absorbed per-head form
+as the HF reference. This is now a **cross-ecosystem-confirmed** finding,
+not a CUDA quirk — both general-purpose reference implementations skip
+MLA's absorbed-cache optimization; only vLLM/SGLang (CUDA-only) implement
+it. Full write-up: `gftdcojp/cloud-murakumo`
+`docs/benchmarks/sqrt-kv-mac-mla-source-inspection.md`.
 
 The Williams STOC 2025 framing should also be read as inspiration for the
 checkpoint-stride formula, not a technical dependency — the underlying

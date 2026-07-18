@@ -8,6 +8,7 @@ implementation / arXiv submission workflow.
 
 | | |
 |---|---|
+| **Value proposition** | Memory capability, not speed — run generation models under limited memory; decode slowdown is an accepted cost (owner reframing, 2026-07-18) |
 | **Primary claim** | √S checkpoint residency cuts measured KV storage **90–97%** for S∈[1k,16k] |
 | **Models** | 135M (Mac MLX) → 14B (Modal A100 bf16) |
 | **Exactness** | Host-paged online-softmax block attention is numerically exact (max\|Δ\|≈7e-5) |
@@ -18,7 +19,7 @@ implementation / arXiv submission workflow.
 | **Submit actor** | [`kotoba-lang/arxiv`](https://github.com/kotoba-lang/arxiv) |
 | **HF paper dataset** | [`com-junkawasaki/sqrt-space-kv-paper`](https://huggingface.co/datasets/com-junkawasaki/sqrt-space-kv-paper) |
 | **Qwen3.6 MoE** | 35B-A3B Modal: **88.5%** KV save @ S=16k (hybrid; see benchmarks) |
-| **Maturity review** | 2026-07-18, M0–M4 **landed**, M5–M6 landed-with-caveats. Real Modal A100 evidence: exact end-to-end token match confirmed (M3), but re-paging every decode step is **2.2x–3.7x slower** than full-KV decode (M2/M3). At sqrt-space-kv's own ~90–97% compression regime, competing lossy presses (H2O/SnapKV/StreamingLLM) score **0% needle-retrieval accuracy** (M4) — sqrt-space-kv is exact but pays the latency tax they don't. MLA composability (M5) got the same save-ratio law on DeepSeek-V2-Lite, but its reference cache doesn't actually store the MLA-compressed latent, so the real composability question stays open. One vLLM datapoint (M6) shows the HF-loop baseline wasn't a weak strawman. Full production kernel + vLLM/SGLang A/B (M6) and true MLA-absorbed-cache test (M5) remain open — see `RESULTS.md` and superproject ADR `2607182800-sqrt-space-kv-mla-composability-maturity-review.edn` |
+| **Maturity review** | 2026-07-18, M0–M4 **landed**, M5–M6 landed-with-caveats (GPU) + M5-mac/M6-mac landed (local). Modal A100: exact end-to-end token match (M3), but re-paging every decode step is **2.2x–3.7x slower** than full-KV decode (M2/M3) — accepted cost per the memory-capability framing above. At ~90–97% compression, competing lossy presses (H2O/SnapKV/StreamingLLM) score **0% needle-retrieval accuracy** (M4). MLA composability (M5, cross-confirmed on both HF/CUDA and mlx-lm/Metal) found neither reference implementation actually caches the compressed latent — real composability question stays open, needs a CUDA absorbed-cache engine (vLLM/SGLang). **Mac-native (M6-mac): `np.memmap` gives real 0MB-RSS lazy paging up to 794MB tested; naive write+del does not** — an actionable, hardware-specific implementation requirement for `:sqrt-plus-page`. Full production kernel + vLLM/SGLang A/B remain open — see `RESULTS.md` and superproject ADR `2607182800-sqrt-space-kv-mla-composability-maturity-review.edn` |
 
 ## Layout
 
