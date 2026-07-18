@@ -306,6 +306,41 @@ generation steps — a different mechanism applies, and only for training).
    contribution. Full write-up: `gftdcojp/cloud-murakumo`
    `docs/benchmarks/sqrt-kv-dit-activation-checkpoint-summary.md`.
 
+### murakumo.cloud production integration path (2026-07-18) — real prototype, not a design doc
+
+Question from conversation: "murakumo.cloud への採用は model 自体に手を入れる
+必要があるか、それとも ollama/vllm と同じ範囲か?" Investigation of
+`gftdcojp/cloud-murakumo` found `mlx-moe` — the engine its Apple-Silicon
+(`:asher`) fleet shells out to — has no cache implementation of its own: it
+reuses `mlx_lm.models.cache.KVCache` directly (`--kv-bits` calls
+`KVCache.to_quantized()` → `QuantizedKVCache`). So the real integration point
+was testable directly, not guessed.
+
+`PagedSqrtKVCache(KVCache)` overrides `update_and_fetch()` — the one real
+hook in `mlx_lm`'s (differently-shaped) Cache API — calling `super()` first
+for correctness-by-construction (same principle as M3's
+`PagedSqrtCache(DynamicCache)`), then running the M6-mac-proven `np.memmap`
+page-out/page-in as a measured side effect. Run against a real, locally
+cached `mlx-community/Qwen2.5-0.5B-Instruct-4bit` in a real `generate()`
+loop:
+
+| S | n_nonresident | baseline tok/s | paged tok/s | slowdown | exact_token_match |
+|--:|--:|--:|--:|--:|:--:|
+| 2048 | 1907 | 158.72 | 51.30 | 3.09x | **true** |
+| 8192 | 7890 | 135.43 | 44.46 | 3.05x | **true** |
+
+**Answer: no model change needed, and it isn't CLI-flag scope either.**
+`cloud-murakumo` currently only generates `mlx-moe serve ...` CLI
+invocations and writes a residency plan
+(`kv_runtime.cljc` → `/tmp/murakumo-kv-plan.edn`) that nothing on the
+Python/MLX side reads yet. What's actually required is an **engine-layer
+cache-class swap** — the same category of change as the `QuantizedKVCache`
+swap `mlx-moe` already ships via `--kv-bits` — which `kv_runtime.cljc`'s
+existing `b(S)`/keep-set computation could drive directly. The GPU/vLLM path
+(MLA absorbed-cache composability, M5) remains the structurally bigger lift
+by comparison. Full write-up: `gftdcojp/cloud-murakumo`
+`docs/benchmarks/sqrt-kv-mlx-lm-paged-cache-summary.md`.
+
 ## Addendum — Qwen3.6-35B-A3B (Modal A100-80GB, 2026-07-10)
 
 User request: "Qwen 3.6 26B A3B". Public open model is **35B-A3B** (total/activated).
