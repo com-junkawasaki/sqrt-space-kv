@@ -29,9 +29,39 @@ experiments, every number reproducible from committed scripts):
 | **Models tested** | 135M (Mac MLX) → 35B-A3B MoE / 14B dense (Modal A100 bf16) → GLM-4-9B-Chat-1M / Qwen2.5-14B (Mac, real weights) |
 | **arXiv** | **submitted** 2026-07-10 · draft `7807366` · primary **cs.CL** · account `junkawasaki-n24y` |
 | **Public id** | *pending announce* (update when `arXiv:YYMM.NNNNN` appears) |
-| **Code** | [`gftdcojp/cloud-murakumo`](https://github.com/gftdcojp/cloud-murakumo) (`:serve :kv-policy`) |
+| **Production serving integration** | [`gftdcojp/cloud-murakumo`](https://github.com/gftdcojp/cloud-murakumo) (`:serve :kv-policy`, private -- vLLM/mlx engine wiring) |
+| **Portable library (Python + Rust)** | this repo, `python/` and `rust/` -- see [Library](#library-python--rust) below |
 | **Submit actor** | [`kotoba-lang/arxiv`](https://github.com/kotoba-lang/arxiv) |
 | **HF paper card** | [`com-junkawasaki/sqrt-space-kv-paper`](https://huggingface.co/datasets/com-junkawasaki/sqrt-space-kv-paper) |
+
+## Library (Python + Rust)
+
+The core residency math -- block sizing, keep-set computation, exact
+reference attention -- is also available as small, dependency-free
+Python and Rust packages, so the technique is usable outside this
+monorepo's Clojure serving stack. This is the same "capability, not speed"
+tradeoff described above: read the table before reaching for it in a
+serving path.
+
+```bash
+pip install sqrt-space-kv        # python/
+cargo add sqrt-space-kv          # rust/
+```
+
+```python
+from sqrt_space_kv import keep_indices, strategy_cost
+
+keep = keep_indices(4096)                       # token indices to keep resident
+cost = strategy_cost("sqrt-checkpoint", 4096)    # {"kv_cells": ..., "fidelity": "exact-with-recompute", ...}
+```
+
+Both ports are pure, hand-written translations of the canonical
+implementation in `cloud-murakumo`'s `sqrt_space.cljc` / `kv_runtime.cljc`
+(no FFI, no shared binary -- this workspace deliberately avoids Rust-core +
+generated-binding setups, see `CONTRIBUTING.md`). Conformance to the
+canonical implementation is enforced by `tests/fixtures/golden.json`, a
+fixture dumped from the `.cljc` and checked by both `python/tests/` and
+`rust/tests/` -- see `CONTRIBUTING.md` for how it's regenerated.
 
 ## Layout
 
@@ -39,6 +69,11 @@ experiments, every number reproducible from committed scripts):
 sqrt-space-kv/
 ├── README.md                 # this file
 ├── RESULTS.md                # executive summary of measured results
+├── LICENSE                   # MIT (library + repo code)
+├── CONTRIBUTING.md           # golden-fixture sync process, running the test suites
+├── RELEASE.md                # manual PyPI + crates.io release checklist
+├── CHANGELOG.md
+├── SECURITY.md
 ├── package.edn               # research package identity
 ├── arxiv-package.edn         # snapshot of arXiv package.edn
 ├── arxiv-status.edn          # snapshot of submission status
@@ -48,13 +83,17 @@ sqrt-space-kv/
 │   ├── abstract.txt          # ASCII-only (arXiv metadata safe)
 │   ├── sqrt_space_kv.pdf
 │   └── Makefile
-├── benchmarks/               # raw JSON + validation notes
+├── benchmarks/                # raw JSON + validation notes
 │   ├── sqrt-kv-mac-m4-*.json|md
 │   ├── sqrt-kv-modal-*.json|md
 │   └── ollama-gemma4-*.json
-└── docs/                     # long-form paper draft + co-scientist notes
-    ├── sqrt_space_llm_kv.md
-    └── sqrt-space-cosci.md
+├── docs/                      # long-form paper draft + co-scientist notes
+│   ├── sqrt_space_llm_kv.md
+│   └── sqrt-space-cosci.md
+├── 90-docs/adr/2607190900-*.md # repo-local decision record for the library port
+├── tests/fixtures/golden.json # cross-language conformance fixture (python/ + rust/)
+├── python/                    # pip install sqrt-space-kv
+└── rust/                      # cargo add sqrt-space-kv
 ```
 
 ## Key numbers (snapshot 2026-07-09)
@@ -72,8 +111,8 @@ Save ratio ≈ \|K\|/S (checkpoints + active block); width-independent.
 
 | Role | Path |
 |---|---|
-| This results repo | `orgs/com-junkawasaki/sqrt-space-kv` |
-| Serving / KV policy code | `orgs/gftdcojp/cloud-murakumo` |
+| This repo (paper, results, and the portable library) | `orgs/com-junkawasaki/sqrt-space-kv` |
+| Canonical implementation (`.cljc`) + production serving glue | `orgs/gftdcojp/cloud-murakumo` |
 | arXiv organism actor | `orgs/kotoba-lang/arxiv` |
 | Live arXiv package | `orgs/kotoba-lang/arxiv/submissions/sqrt-space-kv` |
 
@@ -85,8 +124,10 @@ cd paper && make   # pdflatex + bibtex
 
 ## License / citation
 
+MIT license for the repo code (`python/`, `rust/`) -- see `LICENSE`.
 Paper text and benchmark JSON are research artifacts for the
-`com-junkawasaki` public research surface. Upstream code remains in
-`gftdcojp/cloud-murakumo`. Cite Williams STOC 2025 for the complexity
-result; this package is an empirical systems transfer, not a TM simulation
-of Transformers.
+`com-junkawasaki` public research surface. The canonical implementation
+remains in `gftdcojp/cloud-murakumo` (private; production serving
+integration). Cite Williams STOC 2025 for the complexity result; this
+package is an empirical systems transfer, not a TM simulation of
+Transformers.

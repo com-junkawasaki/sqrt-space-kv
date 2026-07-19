@@ -1,0 +1,42 @@
+[project]
+name = "sqrt-space-kv"
+version = "0.1.0"
+description = "Sqrt-Checkpoint KV-cache residency: cost models, keep-set computation, and exact reference attention. Zero dependencies."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Jun Kawasaki", email = "jun784@gmail.com" }]
+keywords = ["kv-cache", "llm-inference", "attention", "memory", "checkpointing"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/com-junkawasaki/sqrt-space-kv"
+Repository = "https://github.com/com-junkawasaki/sqrt-space-kv"
+Issues = "https://github.com/com-junkawasaki/sqrt-space-kv/issues"
+
+[project.optional-dependencies]
+dev = ["build>=1.2", "pytest>=8.0", "ruff>=0.5"]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sqrt_space_kv = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
