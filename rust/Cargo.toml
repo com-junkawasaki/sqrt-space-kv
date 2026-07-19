@@ -1,0 +1,16 @@
+[package]
+name = "sqrt-space-kv"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Sqrt-Checkpoint KV-cache residency: cost models, keep-set computation, and exact reference attention. Zero dependencies."
+repository = "https://github.com/com-junkawasaki/sqrt-space-kv"
+readme = "README.md"
+keywords = ["kv-cache", "llm", "attention", "memory", "inference"]
+categories = ["algorithms", "science"]
+
+[dependencies]
+# intentionally empty -- pure std f64 math (sqrt/ln/exp), Vec, no runtime deps
+
+[dev-dependencies]
+serde_json = "1"

@@ -1,0 +1,32 @@
+name: Python CI
+
+on:
+  push:
+    paths:
+      - "python/**"
+      - "tests/fixtures/**"
+      - ".github/workflows/python-ci.yml"
+  pull_request:
+    paths:
+      - "python/**"
+      - "tests/fixtures/**"
+      - ".github/workflows/python-ci.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest -q
