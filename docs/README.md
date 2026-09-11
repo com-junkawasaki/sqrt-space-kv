@@ -32,5 +32,5 @@ modal run scripts/modal_sqrt_kv_bench.py \
   --model-id Qwen/Qwen2.5-7B-Instruct --gpu A100
 
 # Policy tournament (CPU)
-clj -M:cosci 3
+kbb -M:cosci 3
 ```
