@@ -76,9 +76,9 @@ Meta-review  product recommendation + theory note
 Run:
 
 ```sh
-clj -M:cosci 3
-clj -M:sqrt-space 65536
-clj -M:kv-policy minimax-m27 65536
+kbb -M:cosci 3
+kbb -M:sqrt-space 65536
+kbb -M:kv-policy minimax-m27 65536
 ```
 
 ## 5. Measured tournament result (2026-07-09)

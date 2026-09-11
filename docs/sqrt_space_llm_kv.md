@@ -257,8 +257,8 @@ modal run scripts/modal_sqrt_kv_bench.py \
   --model-id Qwen/Qwen2.5-7B-Instruct --gpu A100
 
 # Cost model / co-scientist (no GPU)
-clj -M:cosci 3
-clj -M:sqrt-space 65536
+kbb -M:cosci 3
+kbb -M:sqrt-space 65536
 ```
 
 Artifacts: `docs/benchmarks/sqrt-kv-*.json`, `docs/benchmarks/sqrt-kv-modal-*.json`.

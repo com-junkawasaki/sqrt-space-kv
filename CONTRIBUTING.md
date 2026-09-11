@@ -37,7 +37,7 @@ repo into this public one. If the canonical `.cljc` implementation changes:
 
 1. In a `cloud-murakumo` checkout, run:
    ```bash
-   clj -M:sqrt-kv-fixtures /path/to/golden.json
+   kbb -M:sqrt-kv-fixtures /path/to/golden.json
    ```
    (alias defined in `cloud-murakumo`'s `deps.edn`, source in
    `src/cloud_murakumo/sqrt_space_kv_fixtures.clj`)
